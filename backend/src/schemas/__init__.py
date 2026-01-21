@@ -6,6 +6,16 @@ from src.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
+from src.schemas.chat import (
+    ChatListResponse,
+    ChatMemberResponse,
+    ChatResponse,
+    CreateDirectChatRequest,
+    EditMessageRequest,
+    MessageListResponse,
+    MessageResponse,
+    SendMessageRequest,
+)
 from src.schemas.profile import (
     ContactCreateRequest,
     ContactListResponse,
@@ -15,13 +25,21 @@ from src.schemas.profile import (
 )
 
 __all__ = [
+    "ChatListResponse",
+    "ChatMemberResponse",
+    "ChatResponse",
     "ContactCreateRequest",
     "ContactListResponse",
     "ContactResponse",
     "ContactUpdateRequest",
+    "CreateDirectChatRequest",
+    "EditMessageRequest",
     "LoginRequest",
+    "MessageListResponse",
+    "MessageResponse",
     "ProfileUpdateRequest",
     "RegisterRequest",
+    "SendMessageRequest",
     "TokenResponse",
     "UserResponse",
 ]
