@@ -14,6 +14,7 @@ from src.api.search import router as search_router
 from src.api.totp import router as totp_router
 from src.api.transcription import router as transcription_router
 from src.api.voice import router as voice_router
+from src.api.sticker import router as sticker_router
 
 router = APIRouter()
 
@@ -29,3 +30,4 @@ router.include_router(call_router)
 router.include_router(reaction_router)
 router.include_router(search_router)
 router.include_router(voice_router)
+router.include_router(sticker_router)
