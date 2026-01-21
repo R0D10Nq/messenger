@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.api.routes import router as api_router
 from src.config import get_settings
+from src.websocket import manager
 
 
 @asynccontextmanager
@@ -36,6 +37,8 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(api_router, prefix="/api")
+
+    app.mount("/ws", manager.app)
 
     return app
 
