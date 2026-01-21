@@ -3,7 +3,7 @@
 import hashlib
 import secrets
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
@@ -51,7 +51,7 @@ class AuthService:
 
     def _create_access_token(self, user_id: uuid.UUID) -> str:
         """Создание access token."""
-        expire = datetime.now(UTC) + timedelta(
+        expire = datetime.utcnow() + timedelta(
             minutes=self.settings.access_token_expire_minutes
         )
         payload = {
@@ -129,7 +129,7 @@ class AuthService:
             refresh_token_hash=self._hash_token(refresh_token),
             device_info=device_info,
             ip_address=ip_address,
-            expires_at=datetime.now(UTC)
+            expires_at=datetime.utcnow()
             + timedelta(days=self.settings.refresh_token_expire_days),
         )
         self.db.add(session)
@@ -149,7 +149,7 @@ class AuthService:
         result = await self.db.execute(
             select(UserSession)
             .where(UserSession.refresh_token_hash == token_hash)
-            .where(UserSession.expires_at > datetime.now(UTC))
+            .where(UserSession.expires_at > datetime.utcnow())
         )
         session = result.scalar_one_or_none()
 
@@ -158,8 +158,8 @@ class AuthService:
 
         new_refresh_token = self._create_refresh_token()
         session.refresh_token_hash = self._hash_token(new_refresh_token)
-        session.last_used_at = datetime.now(UTC)
-        session.expires_at = datetime.now(UTC) + timedelta(
+        session.last_used_at = datetime.utcnow()
+        session.expires_at = datetime.utcnow() + timedelta(
             days=self.settings.refresh_token_expire_days
         )
         if device_info:
@@ -203,7 +203,7 @@ class AuthService:
         result = await self.db.execute(
             select(UserSession)
             .where(UserSession.user_id == user_id)
-            .where(UserSession.expires_at > datetime.now(UTC))
+            .where(UserSession.expires_at > datetime.utcnow())
             .order_by(UserSession.last_used_at.desc())
         )
         return list(result.scalars().all())

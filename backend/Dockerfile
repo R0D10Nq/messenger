@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Копирование зависимостей
-COPY pyproject.toml ./
+# Копирование зависимостей и README (требуется hatchling)
+COPY pyproject.toml README.md ./
 
 # Установка pip и зависимостей
 RUN pip install --no-cache-dir --upgrade pip \

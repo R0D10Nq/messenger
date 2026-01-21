@@ -26,20 +26,33 @@ def get_client_info(request: Request) -> tuple[str | None, str | None]:
     return device_info, ip_address
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     data: RegisterRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
-) -> UserResponse:
-    """Регистрация нового пользователя."""
+) -> TokenResponse:
+    """Регистрация нового пользователя с автоматическим входом."""
     service = AuthService(db)
+    device_info, ip_address = get_client_info(request)
+    
     try:
         user = await service.register(
             email=data.email,
             password=data.password,
             name=data.name,
         )
-        return UserResponse.model_validate(user)
+        # Автоматический вход после регистрации
+        _, access_token, refresh_token = await service.login(
+            email=data.email,
+            password=data.password,
+            device_info=device_info,
+            ip_address=ip_address,
+        )
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+        )
     except AuthError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
