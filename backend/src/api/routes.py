@@ -19,6 +19,7 @@ from src.api.export import router as export_router
 from src.api.translate import router as translate_router
 from src.api.smart_reply import router as smart_reply_router
 from src.api.invite import router as invite_router
+from src.api.channel import router as channel_router
 
 router = APIRouter()
 
@@ -39,3 +40,4 @@ router.include_router(export_router)
 router.include_router(translate_router)
 router.include_router(smart_reply_router)
 router.include_router(invite_router)
+router.include_router(channel_router)
