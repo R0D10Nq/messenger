@@ -3,7 +3,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from src.models.chat import ChatType, MessageStatus
+from src.models.chat import ChatType, MemberRole, MessageStatus
 
 
 class TestChatModels:
@@ -19,6 +19,12 @@ class TestChatModels:
         assert MessageStatus.SENT.value == "sent"
         assert MessageStatus.DELIVERED.value == "delivered"
         assert MessageStatus.READ.value == "read"
+
+    def test_member_role_values(self):
+        """Проверка значений ролей участников."""
+        assert MemberRole.OWNER.value == "owner"
+        assert MemberRole.ADMIN.value == "admin"
+        assert MemberRole.MEMBER.value == "member"
 
 
 class TestChatSchemas:
@@ -85,9 +91,11 @@ class TestChatSchemas:
             user_id=uuid.uuid4(),
             name="Иван",
             avatar_url=None,
+            role="member",
             joined_at=now,
         )
         assert data.name == "Иван"
+        assert data.role == "member"
 
     def test_chat_response(self):
         """ChatResponse валидация."""
@@ -98,6 +106,8 @@ class TestChatSchemas:
             id=uuid.uuid4(),
             chat_type="direct",
             name=None,
+            description=None,
+            avatar_url=None,
             members=[],
             last_message=None,
             unread_count=0,
@@ -105,6 +115,38 @@ class TestChatSchemas:
         )
         assert data.chat_type == "direct"
         assert data.unread_count == 0
+
+    def test_create_group_chat_request(self):
+        """CreateGroupChatRequest валидация."""
+        from src.schemas.chat import CreateGroupChatRequest
+
+        data = CreateGroupChatRequest(name="Моя группа", description="Описание")
+        assert data.name == "Моя группа"
+        assert data.description == "Описание"
+        assert data.member_ids == []
+
+    def test_update_group_chat_request(self):
+        """UpdateGroupChatRequest валидация."""
+        from src.schemas.chat import UpdateGroupChatRequest
+
+        data = UpdateGroupChatRequest(name="Новое имя")
+        assert data.name == "Новое имя"
+        assert data.description is None
+
+    def test_add_members_request(self):
+        """AddMembersRequest валидация."""
+        from src.schemas.chat import AddMembersRequest
+
+        user_ids = [uuid.uuid4(), uuid.uuid4()]
+        data = AddMembersRequest(user_ids=user_ids)
+        assert len(data.user_ids) == 2
+
+    def test_update_member_role_request(self):
+        """UpdateMemberRoleRequest валидация."""
+        from src.schemas.chat import UpdateMemberRoleRequest
+
+        data = UpdateMemberRoleRequest(role="admin")
+        assert data.role == "admin"
 
     def test_chat_list_response(self):
         """ChatListResponse валидация."""

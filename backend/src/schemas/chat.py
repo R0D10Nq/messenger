@@ -12,6 +12,34 @@ class CreateDirectChatRequest(BaseModel):
     user_id: uuid.UUID
 
 
+class CreateGroupChatRequest(BaseModel):
+    """Запрос на создание группового чата."""
+
+    name: str = Field(min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=500)
+    member_ids: list[uuid.UUID] = Field(default_factory=list)
+
+
+class UpdateGroupChatRequest(BaseModel):
+    """Запрос на обновление группового чата."""
+
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=500)
+    avatar_url: str | None = Field(None, max_length=500)
+
+
+class AddMembersRequest(BaseModel):
+    """Запрос на добавление участников."""
+
+    user_ids: list[uuid.UUID]
+
+
+class UpdateMemberRoleRequest(BaseModel):
+    """Запрос на изменение роли участника."""
+
+    role: str = Field(pattern="^(admin|member)$")
+
+
 class SendMessageRequest(BaseModel):
     """Запрос на отправку сообщения."""
 
@@ -47,6 +75,7 @@ class ChatMemberResponse(BaseModel):
     user_id: uuid.UUID
     name: str
     avatar_url: str | None
+    role: str
     joined_at: datetime
 
 
@@ -56,6 +85,8 @@ class ChatResponse(BaseModel):
     id: uuid.UUID
     chat_type: str
     name: str | None
+    description: str | None
+    avatar_url: str | None
     members: list[ChatMemberResponse]
     last_message: MessageResponse | None
     unread_count: int

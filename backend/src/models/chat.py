@@ -32,6 +32,14 @@ class MessageStatus(str, Enum):
     READ = "read"
 
 
+class MemberRole(str, Enum):
+    """Роль участника в групповом чате."""
+
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+
+
 class Chat(Base):
     """Модель чата."""
 
@@ -48,6 +56,8 @@ class Chat(Base):
         nullable=False,
     )
     name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         server_default=func.now(),
@@ -93,6 +103,11 @@ class ChatMember(Base):
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+    )
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default=MemberRole.MEMBER.value,
+        nullable=False,
     )
     joined_at: Mapped[datetime] = mapped_column(
         DateTime,

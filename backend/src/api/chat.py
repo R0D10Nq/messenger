@@ -10,17 +10,21 @@ from sqlalchemy.orm import selectinload
 
 from src.api.deps import get_current_user
 from src.db import get_db
-from src.models.chat import Chat, ChatMember, ChatType, Message
+from src.models.chat import Chat, ChatMember, ChatType, MemberRole, Message
 from src.models.user import User
 from src.schemas.chat import (
+    AddMembersRequest,
     ChatListResponse,
     ChatMemberResponse,
     ChatResponse,
     CreateDirectChatRequest,
+    CreateGroupChatRequest,
     EditMessageRequest,
     MessageListResponse,
     MessageResponse,
     SendMessageRequest,
+    UpdateGroupChatRequest,
+    UpdateMemberRoleRequest,
 )
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -57,6 +61,7 @@ async def _build_chat_response(
                     user_id=user.id,
                     name=user.name,
                     avatar_url=user.avatar_url,
+                    role=member.role,
                     joined_at=member.joined_at,
                 )
             )
@@ -98,6 +103,8 @@ async def _build_chat_response(
         id=chat.id,
         chat_type=chat.chat_type,
         name=chat_name,
+        description=chat.description,
+        avatar_url=chat.avatar_url,
         members=members_response,
         last_message=last_message_response,
         unread_count=unread_count,
@@ -395,3 +402,232 @@ async def mark_as_read(
 
     member.last_read_at = datetime.now(UTC)
     await db.flush()
+
+
+@router.post("/group", response_model=ChatResponse, status_code=status.HTTP_201_CREATED)
+async def create_group_chat(
+    data: CreateGroupChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ChatResponse:
+    """Создать групповой чат."""
+    chat = Chat(
+        chat_type=ChatType.GROUP.value,
+        name=data.name,
+        description=data.description,
+    )
+    db.add(chat)
+    await db.flush()
+
+    owner_member = ChatMember(
+        chat_id=chat.id,
+        user_id=current_user.id,
+        role=MemberRole.OWNER.value,
+    )
+    db.add(owner_member)
+
+    for user_id in data.member_ids:
+        if user_id == current_user.id:
+            continue
+        user = await db.get(User, user_id)
+        if user:
+            member = ChatMember(
+                chat_id=chat.id,
+                user_id=user_id,
+                role=MemberRole.MEMBER.value,
+            )
+            db.add(member)
+
+    await db.flush()
+
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat.id).options(selectinload(Chat.members))
+    )
+    chat = result.scalar_one()
+
+    return await _build_chat_response(chat, current_user.id, db)
+
+
+@router.patch("/{chat_id}", response_model=ChatResponse)
+async def update_group_chat(
+    chat_id: uuid.UUID,
+    data: UpdateGroupChatRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> ChatResponse:
+    """Обновить групповой чат (только для owner/admin)."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.members))
+    )
+    chat = result.scalar_one_or_none()
+
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Чат не найден", "code": "chat_not_found"},
+        )
+
+    if chat.chat_type != ChatType.GROUP.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Только групповые чаты можно редактировать", "code": "not_group"},
+        )
+
+    member = next((m for m in chat.members if m.user_id == current_user.id), None)
+    if not member or member.role not in (MemberRole.OWNER.value, MemberRole.ADMIN.value):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Нет прав на редактирование", "code": "forbidden"},
+        )
+
+    if data.name is not None:
+        chat.name = data.name
+    if data.description is not None:
+        chat.description = data.description
+    if data.avatar_url is not None:
+        chat.avatar_url = data.avatar_url
+
+    await db.flush()
+    await db.refresh(chat)
+
+    return await _build_chat_response(chat, current_user.id, db)
+
+
+@router.post("/{chat_id}/members", status_code=status.HTTP_201_CREATED)
+async def add_members(
+    chat_id: uuid.UUID,
+    data: AddMembersRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, int]:
+    """Добавить участников в групповой чат."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.members))
+    )
+    chat = result.scalar_one_or_none()
+
+    if not chat or chat.chat_type != ChatType.GROUP.value:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Групповой чат не найден", "code": "chat_not_found"},
+        )
+
+    member = next((m for m in chat.members if m.user_id == current_user.id), None)
+    if not member or member.role not in (MemberRole.OWNER.value, MemberRole.ADMIN.value):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Нет прав на добавление участников", "code": "forbidden"},
+        )
+
+    existing_ids = {m.user_id for m in chat.members}
+    added = 0
+
+    for user_id in data.user_ids:
+        if user_id in existing_ids:
+            continue
+        user = await db.get(User, user_id)
+        if user:
+            new_member = ChatMember(
+                chat_id=chat.id,
+                user_id=user_id,
+                role=MemberRole.MEMBER.value,
+            )
+            db.add(new_member)
+            added += 1
+
+    await db.flush()
+    return {"added": added}
+
+
+@router.delete("/{chat_id}/members/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_member(
+    chat_id: uuid.UUID,
+    user_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> None:
+    """Удалить участника из группового чата."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.members))
+    )
+    chat = result.scalar_one_or_none()
+
+    if not chat or chat.chat_type != ChatType.GROUP.value:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Групповой чат не найден", "code": "chat_not_found"},
+        )
+
+    current_member = next((m for m in chat.members if m.user_id == current_user.id), None)
+    target_member = next((m for m in chat.members if m.user_id == user_id), None)
+
+    if not target_member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Участник не найден", "code": "member_not_found"},
+        )
+
+    is_self_leave = user_id == current_user.id
+    is_admin = current_member and current_member.role in (
+        MemberRole.OWNER.value, MemberRole.ADMIN.value
+    )
+
+    if not is_self_leave and not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Нет прав на удаление участников", "code": "forbidden"},
+        )
+
+    if target_member.role == MemberRole.OWNER.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Нельзя удалить владельца группы", "code": "cannot_remove_owner"},
+        )
+
+    await db.delete(target_member)
+
+
+@router.patch("/{chat_id}/members/{user_id}/role")
+async def update_member_role(
+    chat_id: uuid.UUID,
+    user_id: uuid.UUID,
+    data: UpdateMemberRoleRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, str]:
+    """Изменить роль участника."""
+    result = await db.execute(
+        select(Chat).where(Chat.id == chat_id).options(selectinload(Chat.members))
+    )
+    chat = result.scalar_one_or_none()
+
+    if not chat or chat.chat_type != ChatType.GROUP.value:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Групповой чат не найден", "code": "chat_not_found"},
+        )
+
+    current_member = next((m for m in chat.members if m.user_id == current_user.id), None)
+    if not current_member or current_member.role != MemberRole.OWNER.value:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"message": "Только владелец может менять роли", "code": "owner_only"},
+        )
+
+    target_member = next((m for m in chat.members if m.user_id == user_id), None)
+    if not target_member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": "Участник не найден", "code": "member_not_found"},
+        )
+
+    if target_member.role == MemberRole.OWNER.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"message": "Нельзя изменить роль владельца", "code": "cannot_change_owner"},
+        )
+
+    target_member.role = data.role
+    await db.flush()
+
+    return {"role": data.role}
