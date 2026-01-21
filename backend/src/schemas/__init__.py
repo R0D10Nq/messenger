@@ -20,6 +20,13 @@ from src.schemas.chat import (
     UpdateGroupChatRequest,
     UpdateMemberRoleRequest,
 )
+from src.schemas.encryption import (
+    KeyBundleResponse,
+    PrekeysCountResponse,
+    PublicKeyResponse,
+    RegisterKeysRequest,
+    UploadPrekeysRequest,
+)
 from src.schemas.media import (
     AttachmentResponse,
     CreateTranscriptionRequest,
@@ -74,4 +81,9 @@ __all__ = [
     "TwoFactorStatusResponse",
     "Verify2FARequest",
     "Verify2FAResponse",
+    "KeyBundleResponse",
+    "PrekeysCountResponse",
+    "PublicKeyResponse",
+    "RegisterKeysRequest",
+    "UploadPrekeysRequest",
 ]

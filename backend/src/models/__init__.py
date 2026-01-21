@@ -2,6 +2,7 @@
 
 from src.models.chat import Chat, ChatMember, ChatType, MemberRole, Message, MessageStatus
 from src.models.contact import Contact, ContactStatus
+from src.models.encryption import OneTimePrekey, UserPublicKey
 from src.models.media import (
     MediaFile,
     MediaType,
@@ -23,8 +24,10 @@ __all__ = [
     "Message",
     "MessageAttachment",
     "MessageStatus",
+    "OneTimePrekey",
     "Transcription",
     "TranscriptionStatus",
     "User",
+    "UserPublicKey",
     "UserSession",
 ]

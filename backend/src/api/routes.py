@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from src.api.auth import router as auth_router
 from src.api.chat import router as chat_router
+from src.api.encryption import router as encryption_router
 from src.api.health import router as health_router
 from src.api.media import router as media_router
 from src.api.profile import router as profile_router
@@ -19,3 +20,4 @@ router.include_router(chat_router)
 router.include_router(media_router)
 router.include_router(transcription_router)
 router.include_router(totp_router)
+router.include_router(encryption_router)
