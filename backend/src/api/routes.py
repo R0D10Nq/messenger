@@ -17,6 +17,7 @@ from src.api.voice import router as voice_router
 from src.api.sticker import router as sticker_router
 from src.api.export import router as export_router
 from src.api.translate import router as translate_router
+from src.api.smart_reply import router as smart_reply_router
 
 router = APIRouter()
 
@@ -35,3 +36,4 @@ router.include_router(voice_router)
 router.include_router(sticker_router)
 router.include_router(export_router)
 router.include_router(translate_router)
+router.include_router(smart_reply_router)
