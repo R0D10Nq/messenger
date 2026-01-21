@@ -11,6 +11,7 @@ from src.models.media import (
     Transcription,
     TranscriptionStatus,
 )
+from src.models.pin import PinnedMessage
 from src.models.reaction import MessageReaction
 from src.models.user import User, UserSession
 
@@ -30,6 +31,7 @@ __all__ = [
     "MessageAttachment",
     "MessageReaction",
     "MessageStatus",
+    "PinnedMessage",
     "OneTimePrekey",
     "Transcription",
     "TranscriptionStatus",

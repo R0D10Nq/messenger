@@ -8,6 +8,7 @@ from src.api.chat import router as chat_router
 from src.api.encryption import router as encryption_router
 from src.api.health import router as health_router
 from src.api.media import router as media_router
+from src.api.pin import router as pin_router
 from src.api.profile import router as profile_router
 from src.api.reaction import router as reaction_router
 from src.api.search import router as search_router
@@ -27,3 +28,4 @@ router.include_router(encryption_router)
 router.include_router(call_router)
 router.include_router(reaction_router)
 router.include_router(search_router)
+router.include_router(pin_router)
