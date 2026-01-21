@@ -6,9 +6,21 @@ from src.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
+from src.schemas.profile import (
+    ContactCreateRequest,
+    ContactListResponse,
+    ContactResponse,
+    ContactUpdateRequest,
+    ProfileUpdateRequest,
+)
 
 __all__ = [
+    "ContactCreateRequest",
+    "ContactListResponse",
+    "ContactResponse",
+    "ContactUpdateRequest",
     "LoginRequest",
+    "ProfileUpdateRequest",
     "RegisterRequest",
     "TokenResponse",
     "UserResponse",

@@ -1,13 +1,19 @@
 """Модели пользователя и сессий."""
 
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.db.base import Base
+
+if TYPE_CHECKING:
+    from src.models.contact import Contact
 
 
 class User(Base):
@@ -47,9 +53,15 @@ class User(Base):
         nullable=False,
     )
 
-    sessions: Mapped[list["UserSession"]] = relationship(
+    sessions: Mapped[list[UserSession]] = relationship(
         "UserSession",
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    contacts: Mapped[list[Contact]] = relationship(
+        "Contact",
+        foreign_keys="Contact.owner_id",
+        back_populates="owner",
         cascade="all, delete-orphan",
     )
 
@@ -85,4 +97,4 @@ class UserSession(Base):
         nullable=False,
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="sessions")
+    user: Mapped[User] = relationship("User", back_populates="sessions")
