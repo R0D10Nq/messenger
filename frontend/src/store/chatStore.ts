@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import type { Chat, Message } from '../types/chat';
+import type { Chat, Message, MessageStatus } from '../types/chat';
 import { chatService } from '../services/chat';
 
 interface ChatState {
@@ -23,6 +23,7 @@ interface ChatActions {
     sendMessage: (content: string, replyToId?: string) => Promise<void>;
     addMessage: (message: Message) => void;
     updateMessage: (message: Message) => void;
+    updateMessageStatus: (messageId: string, status: MessageStatus) => void;
     createDirectChat: (participantId: string) => Promise<Chat>;
     clearError: () => void;
 }
@@ -121,6 +122,15 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
         const { messages } = get();
         set({
             messages: messages.map((m) => (m.id === message.id ? message : m)),
+        });
+    },
+
+    updateMessageStatus: (messageId: string, status: MessageStatus) => {
+        const { messages } = get();
+        set({
+            messages: messages.map((m) =>
+                m.id === messageId ? { ...m, status } : m
+            ),
         });
     },
 
