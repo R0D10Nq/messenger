@@ -23,6 +23,7 @@ from src.api.channel import router as channel_router
 from src.api.device import router as device_router
 from src.api.subtitle import router as subtitle_router
 from src.api.bot import router as bot_router
+from src.api.analytics import router as analytics_router
 
 router = APIRouter()
 
@@ -47,3 +48,4 @@ router.include_router(channel_router)
 router.include_router(device_router)
 router.include_router(subtitle_router)
 router.include_router(bot_router)
+router.include_router(analytics_router)
