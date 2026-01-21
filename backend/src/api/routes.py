@@ -3,6 +3,7 @@
 from fastapi import APIRouter
 
 from src.api.auth import router as auth_router
+from src.api.call import router as call_router
 from src.api.chat import router as chat_router
 from src.api.encryption import router as encryption_router
 from src.api.health import router as health_router
@@ -21,3 +22,4 @@ router.include_router(media_router)
 router.include_router(transcription_router)
 router.include_router(totp_router)
 router.include_router(encryption_router)
+router.include_router(call_router)
