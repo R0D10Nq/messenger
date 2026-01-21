@@ -1,7 +1,8 @@
 """API эндпоинты для поиска."""
 
 import uuid
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, func, select

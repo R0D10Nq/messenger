@@ -57,6 +57,9 @@ class User(Base):
     totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     totp_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    is_online: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     sessions: Mapped[list[UserSession]] = relationship(
         "UserSession",
         back_populates="user",

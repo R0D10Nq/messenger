@@ -58,9 +58,18 @@ class ConnectionManager:
 
             self._connections[sid] = UserConnection(sid=sid, user_id=user_id)
 
+            was_online = user_id in self._user_sids and len(self._user_sids[user_id]) > 0
+
             if user_id not in self._user_sids:
                 self._user_sids[user_id] = set()
             self._user_sids[user_id].add(sid)
+
+            if not was_online:
+                await self.sio.emit(
+                    "user_online",
+                    {"user_id": str(user_id)},
+                    skip_sid=sid,
+                )
 
             return True
 
@@ -72,6 +81,10 @@ class ConnectionManager:
                 self._user_sids[conn.user_id].discard(sid)
                 if not self._user_sids[conn.user_id]:
                     del self._user_sids[conn.user_id]
+                    await self.sio.emit(
+                        "user_offline",
+                        {"user_id": str(conn.user_id)},
+                    )
 
         @self.sio.event  # type: ignore[untyped-decorator]
         async def join_chat(sid: str, data: dict[str, Any]) -> dict[str, Any]:
