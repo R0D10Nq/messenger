@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useAuthStore } from './store/authStore';
 import { AuthPage } from './pages/AuthPage';
-import { HomePage } from './pages/HomePage';
+import { ChatPage } from './pages/ChatPage';
 
 function App() {
     const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
@@ -18,7 +18,7 @@ function App() {
         );
     }
 
-    return isAuthenticated ? <HomePage /> : <AuthPage />;
+    return isAuthenticated ? <ChatPage /> : <AuthPage />;
 }
 
 export default App;
