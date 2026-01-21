@@ -53,6 +53,10 @@ class User(Base):
         nullable=False,
     )
 
+    totp_secret: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    totp_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     sessions: Mapped[list[UserSession]] = relationship(
         "UserSession",
         back_populates="user",

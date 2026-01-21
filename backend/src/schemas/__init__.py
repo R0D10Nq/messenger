@@ -34,6 +34,13 @@ from src.schemas.profile import (
     ContactUpdateRequest,
     ProfileUpdateRequest,
 )
+from src.schemas.totp import (
+    LoginWith2FARequest,
+    Setup2FAResponse,
+    TwoFactorStatusResponse,
+    Verify2FARequest,
+    Verify2FAResponse,
+)
 
 __all__ = [
     "AddMembersRequest",
@@ -62,4 +69,9 @@ __all__ = [
     "UpdateMemberRoleRequest",
     "UploadResponse",
     "UserResponse",
+    "LoginWith2FARequest",
+    "Setup2FAResponse",
+    "TwoFactorStatusResponse",
+    "Verify2FARequest",
+    "Verify2FAResponse",
 ]
