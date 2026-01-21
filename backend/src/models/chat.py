@@ -14,6 +14,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.db.base import Base
 
 if TYPE_CHECKING:
+    from src.models.media import MessageAttachment
     from src.models.user import User
 
 
@@ -166,4 +167,9 @@ class Message(Base):
         "Message",
         remote_side=[id],
         foreign_keys=[reply_to_id],
+    )
+    attachments: Mapped[list[MessageAttachment]] = relationship(
+        "MessageAttachment",
+        back_populates="message",
+        cascade="all, delete-orphan",
     )

@@ -20,6 +20,11 @@ from src.schemas.chat import (
     UpdateGroupChatRequest,
     UpdateMemberRoleRequest,
 )
+from src.schemas.media import (
+    AttachmentResponse,
+    MediaFileResponse,
+    UploadResponse,
+)
 from src.schemas.profile import (
     ContactCreateRequest,
     ContactListResponse,
@@ -30,6 +35,7 @@ from src.schemas.profile import (
 
 __all__ = [
     "AddMembersRequest",
+    "AttachmentResponse",
     "ChatListResponse",
     "ChatMemberResponse",
     "ChatResponse",
@@ -41,6 +47,7 @@ __all__ = [
     "CreateGroupChatRequest",
     "EditMessageRequest",
     "LoginRequest",
+    "MediaFileResponse",
     "MessageListResponse",
     "MessageResponse",
     "ProfileUpdateRequest",
@@ -49,5 +56,6 @@ __all__ = [
     "TokenResponse",
     "UpdateGroupChatRequest",
     "UpdateMemberRoleRequest",
+    "UploadResponse",
     "UserResponse",
 ]

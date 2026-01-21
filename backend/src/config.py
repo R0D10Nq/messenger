@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     refresh_token_expire_days: int = 7
 
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    media_storage_path: str = "./media"
 
 
 @lru_cache
