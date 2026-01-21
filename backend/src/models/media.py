@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -69,6 +69,51 @@ class MediaFile(Base):
         back_populates="media",
         cascade="all, delete-orphan",
     )
+
+
+class TranscriptionStatus(str, Enum):
+    """Статус транскрипции."""
+
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class Transcription(Base):
+    """Модель транскрипции голосового сообщения."""
+
+    __tablename__ = "transcriptions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+    )
+    media_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("media_files.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default=TranscriptionStatus.PENDING.value,
+        nullable=False,
+    )
+    text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    language: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    duration_seconds: Mapped[float | None] = mapped_column(nullable=True)
+    error_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now(),
+        nullable=False,
+    )
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    media: Mapped[MediaFile] = relationship("MediaFile")
 
 
 class MessageAttachment(Base):

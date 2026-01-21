@@ -38,3 +38,25 @@ class UploadResponse(BaseModel):
 
     media: MediaFileResponse
     message: str
+
+
+class TranscriptionResponse(BaseModel):
+    """Ответ с данными транскрипции."""
+
+    id: uuid.UUID
+    media_id: uuid.UUID
+    status: str
+    text: str | None
+    language: str | None
+    duration_seconds: float | None
+    error_message: str | None
+    created_at: datetime
+    completed_at: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
+class CreateTranscriptionRequest(BaseModel):
+    """Запрос на создание транскрипции."""
+
+    media_id: uuid.UUID

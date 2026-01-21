@@ -22,7 +22,9 @@ from src.schemas.chat import (
 )
 from src.schemas.media import (
     AttachmentResponse,
+    CreateTranscriptionRequest,
     MediaFileResponse,
+    TranscriptionResponse,
     UploadResponse,
 )
 from src.schemas.profile import (
@@ -54,6 +56,8 @@ __all__ = [
     "RegisterRequest",
     "SendMessageRequest",
     "TokenResponse",
+    "TranscriptionResponse",
+    "CreateTranscriptionRequest",
     "UpdateGroupChatRequest",
     "UpdateMemberRoleRequest",
     "UploadResponse",
