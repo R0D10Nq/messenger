@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
+import { TypingIndicator } from './TypingIndicator';
 import type { Message } from '../../types/chat';
 
 interface MessageBubbleProps {
@@ -22,8 +23,8 @@ function MessageBubble({ message, isOwn }: MessageBubbleProps) {
         <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2`}>
             <div
                 className={`max-w-[70%] rounded-2xl px-4 py-2 ${isOwn
-                        ? 'bg-blue-500 text-white rounded-br-md'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                    ? 'bg-blue-500 text-white rounded-br-md'
+                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
                     }`}
             >
                 {!isOwn && (
@@ -113,6 +114,7 @@ export function MessageList() {
                             isOwn={message.sender_id === user?.id}
                         />
                     ))}
+                    <TypingIndicator chatId={currentChat.id} />
                     <div ref={messagesEndRef} />
                 </>
             )}
