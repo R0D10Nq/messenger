@@ -9,6 +9,7 @@ from src.api.encryption import router as encryption_router
 from src.api.health import router as health_router
 from src.api.media import router as media_router
 from src.api.profile import router as profile_router
+from src.api.reaction import router as reaction_router
 from src.api.totp import router as totp_router
 from src.api.transcription import router as transcription_router
 
@@ -23,3 +24,4 @@ router.include_router(transcription_router)
 router.include_router(totp_router)
 router.include_router(encryption_router)
 router.include_router(call_router)
+router.include_router(reaction_router)

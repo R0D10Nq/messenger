@@ -11,6 +11,7 @@ from src.models.media import (
     Transcription,
     TranscriptionStatus,
 )
+from src.models.reaction import MessageReaction
 from src.models.user import User, UserSession
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
     "MemberRole",
     "Message",
     "MessageAttachment",
+    "MessageReaction",
     "MessageStatus",
     "OneTimePrekey",
     "Transcription",

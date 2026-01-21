@@ -15,6 +15,7 @@ from src.db.base import Base
 
 if TYPE_CHECKING:
     from src.models.media import MessageAttachment
+    from src.models.reaction import MessageReaction
     from src.models.user import User
 
 
@@ -170,6 +171,11 @@ class Message(Base):
     )
     attachments: Mapped[list[MessageAttachment]] = relationship(
         "MessageAttachment",
+        back_populates="message",
+        cascade="all, delete-orphan",
+    )
+    reactions: Mapped[list[MessageReaction]] = relationship(
+        "MessageReaction",
         back_populates="message",
         cascade="all, delete-orphan",
     )
