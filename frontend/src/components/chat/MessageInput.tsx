@@ -2,15 +2,18 @@
  * Поле ввода сообщения
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useChatStore } from '../../store/chatStore';
+import { wsService } from '../../services/websocket';
 import { AttachmentButton } from './AttachmentButton';
 import { VoiceRecorder } from './VoiceRecorder';
 
 export function MessageInput() {
     const [content, setContent] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
     const { currentChat, sendMessage } = useChatStore();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         if (textareaRef.current) {
@@ -19,10 +22,49 @@ export function MessageInput() {
         }
     }, [content]);
 
+    const handleTyping = useCallback(() => {
+        if (!currentChat) return;
+
+        if (!isTyping) {
+            setIsTyping(true);
+            wsService.startTyping(currentChat.id);
+        }
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            setIsTyping(false);
+            if (currentChat) {
+                wsService.stopTyping(currentChat.id);
+            }
+        }, 2000);
+    }, [currentChat, isTyping]);
+
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+            if (currentChat && isTyping) {
+                wsService.stopTyping(currentChat.id);
+            }
+        };
+    }, [currentChat, isTyping]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const trimmed = content.trim();
         if (!trimmed || !currentChat) return;
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+        if (isTyping) {
+            setIsTyping(false);
+            wsService.stopTyping(currentChat.id);
+        }
 
         setContent('');
         await sendMessage(trimmed);
@@ -52,7 +94,10 @@ export function MessageInput() {
                 <textarea
                     ref={textareaRef}
                     value={content}
-                    onChange={(e) => setContent(e.target.value)}
+                    onChange={(e) => {
+                        setContent(e.target.value);
+                        handleTyping();
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder="Напишите сообщение..."
                     rows={1}
