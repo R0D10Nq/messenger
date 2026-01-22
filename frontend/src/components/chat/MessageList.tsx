@@ -2,49 +2,64 @@
  * Список сообщений
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
 import { TypingIndicator } from './TypingIndicator';
+import { MessageReactions } from './MessageReactions';
 import type { Message } from '../../types/chat';
 
 interface MessageBubbleProps {
     message: Message;
     isOwn: boolean;
+    onReactionChange?: () => void;
 }
 
-function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+function MessageBubble({ message, isOwn, onReactionChange }: MessageBubbleProps) {
     const time = new Date(message.created_at).toLocaleTimeString('ru-RU', {
         hour: '2-digit',
         minute: '2-digit',
     });
 
+    const hasReactions = message.reactions && message.reactions.length > 0;
+
     return (
-        <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2`}>
-            <div
-                className={`max-w-[70%] rounded-2xl px-4 py-2 ${isOwn
-                    ? 'bg-blue-500 text-white rounded-br-md'
-                    : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                    }`}
-            >
-                {!isOwn && (
-                    <p className="text-xs font-medium text-blue-600 mb-1">
-                        {message.sender_name}
-                    </p>
-                )}
-                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-2 group`}>
+            <div className="relative">
                 <div
-                    className={`flex items-center justify-end gap-1 mt-1 text-xs ${isOwn ? 'text-blue-100' : 'text-gray-500'
+                    className={`max-w-[70%] rounded-2xl px-4 py-2 ${isOwn
+                        ? 'bg-blue-500 text-white rounded-br-md'
+                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
                         }`}
                 >
-                    <span>{time}</span>
-                    {message.is_edited && <span>(ред.)</span>}
-                    {isOwn && (
-                        <span>
-                            {message.status === 'read' ? '✓✓' : message.status === 'delivered' ? '✓✓' : '✓'}
-                        </span>
+                    {!isOwn && (
+                        <p className="text-xs font-medium text-blue-600 mb-1">
+                            {message.sender_name}
+                        </p>
                     )}
+                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                    <div
+                        className={`flex items-center justify-end gap-1 mt-1 text-xs ${isOwn ? 'text-blue-100' : 'text-gray-500'
+                            }`}
+                    >
+                        <span>{time}</span>
+                        {message.is_edited && <span>(ред.)</span>}
+                        {isOwn && (
+                            <span>
+                                {message.status === 'read' ? '✓✓' : message.status === 'delivered' ? '✓✓' : '✓'}
+                            </span>
+                        )}
+                    </div>
                 </div>
+                {(hasReactions || true) && (
+                    <div className={`mt-1 ${isOwn ? 'text-right' : 'text-left'}`}>
+                        <MessageReactions
+                            messageId={message.id}
+                            reactions={message.reactions || []}
+                            onReactionChange={onReactionChange}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -56,6 +71,12 @@ export function MessageList() {
     const { user } = useAuthStore();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleReactionChange = useCallback(() => {
+        if (currentChat) {
+            loadMessages(currentChat.id);
+        }
+    }, [currentChat, loadMessages]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -112,6 +133,7 @@ export function MessageList() {
                             key={message.id}
                             message={message}
                             isOwn={message.sender_id === user?.id}
+                            onReactionChange={handleReactionChange}
                         />
                     ))}
                     <TypingIndicator chatId={currentChat.id} />

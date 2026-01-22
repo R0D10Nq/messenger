@@ -14,6 +14,13 @@ export interface ChatMember {
     joined_at: string;
 }
 
+export interface ReactionSummary {
+    emoji: string;
+    count: number;
+    users: string[];
+    reacted_by_me: boolean;
+}
+
 export interface Message {
     id: string;
     chat_id: string;
@@ -23,6 +30,7 @@ export interface Message {
     content: string;
     status: MessageStatus;
     reply_to_id: string | null;
+    reactions: ReactionSummary[];
     created_at: string;
     updated_at: string | null;
     is_edited: boolean;
