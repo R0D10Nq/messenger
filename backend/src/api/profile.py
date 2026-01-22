@@ -30,6 +30,29 @@ async def get_my_profile(
     return UserResponse.model_validate(current_user)
 
 
+@router.get("/search", response_model=list[UserResponse])
+async def search_users(
+    q: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> list[UserResponse]:
+    """Поиск пользователей по имени или email."""
+    if len(q) < 2:
+        return []
+
+    result = await db.execute(
+        select(User)
+        .where(User.id != current_user.id)
+        .where(User.is_active == True)  # noqa: E712
+        .where(
+            (User.name.ilike(f"%{q}%")) | (User.email.ilike(f"%{q}%"))
+        )
+        .limit(20)
+    )
+    users = result.scalars().all()
+    return [UserResponse.model_validate(user) for user in users]
+
+
 @router.patch("/me", response_model=UserResponse)
 async def update_my_profile(
     data: ProfileUpdateRequest,

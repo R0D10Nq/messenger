@@ -6,13 +6,13 @@ export type ContactStatus = 'pending' | 'accepted' | 'blocked';
 
 export interface Contact {
     id: string;
-    user_id: string;
-    contact_user_id: string;
+    contact_id: string;
     nickname: string | null;
     status: ContactStatus;
     contact_name: string;
     contact_email: string;
-    contact_avatar: string | null;
+    contact_avatar_url: string | null;
+    contact_status_message: string | null;
     created_at: string;
 }
 
@@ -22,7 +22,7 @@ export interface ContactListResponse {
 }
 
 export interface CreateContactRequest {
-    contact_user_id: string;
+    contact_id: string;
     nickname?: string;
 }
 

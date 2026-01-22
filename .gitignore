@@ -43,3 +43,7 @@ backend/build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test reports (local only)
+TEST_REPORT.md
+test-screenshots/

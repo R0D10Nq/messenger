@@ -135,7 +135,7 @@ export const useChatStore = create<ChatState & ChatActions>((set, get) => ({
     },
 
     createDirectChat: async (participantId: string) => {
-        const chat = await chatService.createDirectChat({ participant_id: participantId });
+        const chat = await chatService.createDirectChat({ user_id: participantId });
         const { chats } = get();
         set({ chats: [chat, ...chats] });
         return chat;

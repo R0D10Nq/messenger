@@ -18,7 +18,7 @@ export const profileService = {
     },
 
     async updateProfile(data: ProfileUpdateRequest): Promise<User> {
-        return api.put<User>('/profile/me', data);
+        return api.patch<User>('/profile/me', data);
     },
 
     async searchUsers(query: string): Promise<User[]> {
@@ -34,7 +34,7 @@ export const profileService = {
     },
 
     async updateContact(contactId: string, data: UpdateContactRequest): Promise<Contact> {
-        return api.put<Contact>(`/profile/contacts/${contactId}`, data);
+        return api.patch<Contact>(`/profile/contacts/${contactId}`, data);
     },
 
     async deleteContact(contactId: string): Promise<void> {

@@ -27,7 +27,7 @@ function ContactItem({ contact, onStartChat, onDelete }: ContactItemProps) {
             </div>
             <div className="flex items-center gap-2">
                 <button
-                    onClick={() => onStartChat(contact.contact_user_id)}
+                    onClick={() => onStartChat(contact.contact_id)}
                     className="p-2 hover:bg-gray-200 rounded-full transition-colors"
                     title="Написать"
                 >

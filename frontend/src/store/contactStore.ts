@@ -41,7 +41,7 @@ export const useContactStore = create<ContactState & ContactActions>((set, get) 
     addContact: async (userId: string, nickname?: string) => {
         try {
             const contact = await profileService.addContact({
-                contact_user_id: userId,
+                contact_id: userId,
                 nickname,
             });
             const { contacts } = get();

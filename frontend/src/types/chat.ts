@@ -57,7 +57,7 @@ export interface SendMessageRequest {
 }
 
 export interface CreateDirectChatRequest {
-    participant_id: string;
+    user_id: string;
 }
 
 export interface CreateGroupChatRequest {

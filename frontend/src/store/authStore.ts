@@ -80,7 +80,14 @@ export const useAuthStore = create<AuthState & AuthActions>()(
             },
 
             checkAuth: async () => {
+                const state = useAuthStore.getState();
+                // Если уже авторизован и есть user - не делать запрос
+                if (state.isAuthenticated && state.user) {
+                    return;
+                }
+
                 if (!authService.isAuthenticated()) {
+                    set({ isLoading: false });
                     return;
                 }
 
@@ -109,8 +116,10 @@ export const useAuthStore = create<AuthState & AuthActions>()(
         {
             name: 'auth-storage',
             partialize: (state) => ({
+                user: state.user,
                 accessToken: state.accessToken,
                 refreshToken: state.refreshToken,
+                isAuthenticated: state.isAuthenticated,
             }),
         }
     )
